@@ -32,7 +32,7 @@ Linux 系统：Ubuntu 20.04 LTS Desktop
 
 
 
-## 关键说明
+## ! 重要
 
 重要：k8s 和 istio 的很多镜像都是存储在谷歌的 kubernetes.io 和 gcr.io 上，请务必解决 “网络问题” ，如果不能解决，后面将会阻力重重。
 
@@ -40,7 +40,7 @@ Linux 系统：Ubuntu 20.04 LTS Desktop
 
 
 
-## 安装步骤
+## 安装 Kubernetes
 
 ### 安装 Ubuntu 20.04 LTS 
 
@@ -48,19 +48,46 @@ Linux 系统：Ubuntu 20.04 LTS Desktop
 
 之所以选用 desktop 是为了配置一些网络方便些，并且为后续可能直接在 Ubuntu 系统上进行开发预留后路
 
+### 配置 SSH root 用户
+
+```bash
+$ sudo apt install vim openssh-server -y
+$ sudo vim /etc/ssh/sshd_config
+```
+
+修改 sshd_config 文件，找到 PermitRootLogin 一行，在下面添加 PermitRootLogin yes
+
+添加个人的 SSH 公钥到 root 用户的 .ssh  目录下，操作如下：
+
+```bash
+$ sudo vim /root/.ssh/authorized_keys
+```
+
+放置个人的公钥到上述文件，保存后在 Windows 下测试是否生效，打开 Windows Termial，执行以下命令：
+
+```bash
+$ ssh root@[Your-VM-IP]
+```
+
+虚拟机 IP 可以通过 虚拟机系统中的网络设置里查看，或者通过执行 `ip addr show` 查看，默认应该是类似 192.168.148.xxx 的地址；
+
+如果能够登陆成功，说明 SSH root 用户配置成功。
+
+然后就可以把虚拟机运行在后台了，下述所有的命令都在 Windows Termial 中操作；
+
 ### 安装 Docker
 
 使用 Ubuntu 默认的 apt 源进行安装即可：
 
 ```bash
-$ sudo apt update
-$ sudo apt install docker.io
+$ apt update
+$ apt install docker.io
 ```
 
 可以看到 Ubuntu 20.04 下默认安装的版本是  19.03.8：
 
 ```bash
-root@ubuntu:~# docker version
+$ docker version
 Client:
  Version:           19.03.8
 ```
@@ -68,21 +95,124 @@ Client:
 Docker 安装之后，通过下述命令来开启服务，以确保每次系统启动的时候都会自动运行 Docker 服务：
 
 ```bash
-$ sudo systemctl start docker
-$ sudo systemctl enable docker
+$ systemctl start docker
+$ systemctl enable docker
 ```
 
-（未完待续）
+### 安装 Kubernetes 组件
 
-### 安装 Kubernetes
+安装完 Docker 之后，现在可以开始安装 Kubernetes 了。
+
+首先需要安装 apt-transport-https 和 curl，如果已经安装过可忽略。
+
+```bash
+$ apt install apt-transport-https curl
+```
+
+然后添加 Kubernetes 的签名密钥到系统：
+
+```bash
+$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+```
+
+下一步则是添加 Kubernetes 安装包源，下面的命令是基于 Ubuntu xenial (16.04) 版本的，经测试是可以正常安装的，如果想基于 Ubuntu 20.04 的源安装，也可以将下述命令中的 xenial 替换成 focal 。
+
+```bash
+$ apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+```
+
+上述完成后，正式安装 Kubernetes：
+
+```bash
+$ apt install kubeadm kubelet kubectl kubernetes-cni
+```
 
 ### 禁用内存 swap
 
+为了能确保 Kubernetes 正常运行，先禁用 Linux 的内存交换，执行命令：
+
+```bash
+$ sudo swapoff -a
+```
+
+上述命令会禁用内存交换，为了能永久生效，修改 /etc/fstab 文件：
+
+```bash
+$ sudo nano /etc/fstab
+```
+
+在文件里，通过在行首添加 `#` 来注释掉 `/swapfile` ，并且保存文件。
+
 ### 设置 hostnames
+
+确保当前网络环境下 Kubernetes 所在的节点有独一无二的 hostname，这里可以选用 k8s-master 作为 hostname
+
+```bash
+$ sudo hostnamectl set-hostname k8s-master
+```
+
+为了使得 hostname 永久生效，同时修改 `/etc/hosts` 下的文件，添加 127.0.0.1 对应的 hostname， 如下所示：
+
+```bash
+127.0.0.1       localhost k8s-master
+127.0.1.1       ubuntu
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+```
 
 ### 初始化 Kubernetes Master 节点
 
+下面开始初始化 Kubernetes Master 节点，执行下述命令：
+
+```bash
+$ kubeadm init
+```
+
+注意，首次执行因为需要从网络上下载镜像，耗时会比较久，可以通过执行下述命令提前拉取镜像：
+
+```bash
+$ kubeadm config images pull
+```
+
+等待片刻，如果没有什么问题的话，应该会看到安装成功的提示信息；
+
+并且 kubeadm 命令给出了针对 Master 和 Worker 节点的配置方式，因为采用的是单节点部署，只需按照说明执行下述命令即可：
+
+```bash
+$ mkdir -p $HOME/.kube
+$ cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
 ### 部署 K8S pod 网络
+
+最后一步，就是部署 pod 网络，执行下述命令即可：
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+$ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-rbac.yml
+```
+
+至此，Kubernetes 安装完毕，可以通过执行下述命令查看当前安装的版本：
+
+```bash
+$ kubectl version
+Client Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.5", GitCommit:"e6503f8d8f769ace2f338794c914a96fc335df0f", GitTreeState:"clean", BuildDate:"2020-06-26T03:47:41Z", GoVersion:"go1.13.9", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.5", GitCommit:"e6503f8d8f769ace2f338794c914a96fc335df0f", GitTreeState:"clean", BuildDate:"2020-06-26T03:39:24Z", GoVersion:"go1.13.9", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+可以看到默认安装的 Kubernetes  版本是比较新的，1.18.5 版本。
+
+
+
+## 安装 Isitio
+
+（待补充）
 
 
 
