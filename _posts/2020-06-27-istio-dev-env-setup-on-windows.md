@@ -20,8 +20,6 @@ categories: istio
 5. wsl2 虽然好，但目前尚不成熟，需要申请 windows 内部开发版本才能使用，并且据说性能不如 Vmware；
 6. wsl1 很好用，配合 windows terminal 已经基本媲美 Mac OS X 下的开发体验；
 
-
-
 ## 环境
 
 操作系统：Windows 10 专业版，版本 18363.900
@@ -30,15 +28,11 @@ categories: istio
 
 Linux 系统：Ubuntu 20.04 LTS Desktop
 
-
-
 ## ! 重要
 
 重要：k8s 和 istio 的很多镜像都是存储在谷歌的 kubernetes.io 和 gcr.io 上，请务必解决 “网络问题” ，如果不能解决，后面将会阻力重重。
 
 本人也是在折腾了无数次之后，最终认为基于 Ubuntu 系统 PPTP 方案最佳，可以实现丝般顺滑体验，为大家提供一种思路。
-
-
 
 ## 安装 Kubernetes
 
@@ -208,13 +202,9 @@ Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.5", GitCom
 
 可以看到默认安装的 Kubernetes  版本是比较新的，1.18.5 版本。
 
-
-
 ## 安装 Isitio
 
 （待补充）
-
-
 
 ## 参考
 
