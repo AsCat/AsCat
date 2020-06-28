@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "windows 10 下搭建 istio 开发环境"
+title: "windows 10 下基于虚拟机搭建 Kubernates + istio 开发环境"
 categories: istio
 
 ---
