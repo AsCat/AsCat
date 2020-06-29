@@ -183,6 +183,15 @@ $ cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 $ chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
+执行完毕后检查下 kube-system 下的 pod 状态，如果出现 coredns 运行异常，需要在宿主机上手工创建文件 /run/flannel/subnet.env，并填入下列内容：
+
+```bash
+FLANNEL_NETWORK=10.244.0.0/16
+FLANNEL_SUBNET=10.244.0.1/24
+FLANNEL_MTU=1450
+FLANNEL_IPMASQ=true
+```
+
 ### 部署 K8S pod 网络
 
 最后一步，就是部署 pod 网络，执行下述命令即可：
@@ -218,7 +227,93 @@ $ kubectl taint node k8s-master node-role.kubernetes.io/master:NoSchedule-
 $ curl -L https://istio.io/downloadIstio | sh -
 ```
 
-（未完待续）
+为了后续操作方便，可以直接添加路径到 bashrc 里：
+
+```bash
+$ cd istio-1.6.3
+$ pwd
+/root/istio_install/istio-1.6.3
+$ vim ~/.bashrc
+```
+
+添加下述内容：
+
+```bash
+export PATH=/root/istio_install/istio-1.6.3:$PATH
+```
+
+别忘记执行 source 命令使得配置生效：
+
+```bash
+$ source ~/.bashrc
+```
+
+现在可以试下 istioctl 命令了：
+
+```bash
+$ istioctl
+Istio configuration command line utility for service operators to
+debug and diagnose their Istio mesh.
+
+Usage:
+  istioctl [command]
+
+Available Commands:
+  analyze         Analyze Istio configuration and print validation messages
+  authz           (authz is experimental. Use `istioctl experimental authz`)
+  convert-ingress Convert Ingress configuration into Istio VirtualService configuration
+  dashboard       Access to Istio web UIs
+  deregister      De-registers a service instance
+  experimental    Experimental commands that may be modified or deprecated
+  help            Help about any command
+  install         Applies an Istio manifest, installing or reconfiguring Istio on a cluster.
+  kube-inject     Inject Envoy sidecar into Kubernetes pod resources
+  manifest        Commands related to Istio manifests
+  operator        Commands related to Istio operator controller.
+  profile         Commands related to Istio configuration profiles
+  proxy-config    Retrieve information about proxy configuration from Envoy [kube only]
+  proxy-status    Retrieves the synchronization status of each Envoy in the mesh [kube only]
+  register        Registers a service instance (e.g. VM) joining the mesh
+  upgrade         Upgrade Istio control plane in-place
+  validate        Validate Istio policy and rules (NOTE: validate is deprecated and will be removed in 1.6. Use 'istioctl analyze' to validate configuration.)
+  verify-install  Verifies Istio Installation Status or performs pre-check for the cluster before Istio installation
+  version         Prints out build version information
+```
+
+接下来我们开始正式安装 istio 组件，非常简单，一行命令搞定：
+
+```bash
+$ istioctl install --set profile=demo
+```
+
+首次部署会比较慢，因为要拉取镜像，耐心等待……
+
+顺利的话，将会看到以下提示信息：
+
+```bash
+Detected that your cluster does not support third party JWT authentication. Falling back to less secure first party JWT. See https://istio.io/docs/ops/best-practices/security/#configure-third-party-service-account-tokens for details.
+✔ Istio core installed
+  Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+✔ Istiod installed
+✔ Ingress gateways installed
+✔ Egress gateways installed
+✔ Addons installed
+✔ Installation complete
+```
+
+查看下 istio-system 下面的  pod 转态，至此，istio 的安装就大功告成了！
+
+```bash
+$ kubectl get pod -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+grafana-b54bb57b9-6wvfc                 1/1     Running   0          6m19s
+istio-egressgateway-77c7d594c5-m7nvk    1/1     Running   0          6m20s
+istio-ingressgateway-766c84dfdc-kl4vp   1/1     Running   0          6m20s
+istio-tracing-9dd6c4f7c-dvrmp           1/1     Running   0          6m19s
+istiod-7b69ff6f8c-5skzb                 1/1     Running   0          7m51s
+kiali-d45468dc4-n9kqw                   1/1     Running   0          6m19s
+prometheus-5fdfc44fb7-7wsdg             2/2     Running   0          6m18s
+```
 
 ## 参考
 
