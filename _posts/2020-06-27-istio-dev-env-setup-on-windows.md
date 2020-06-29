@@ -7,11 +7,11 @@ categories: istio
 
 ## 背景
 
-如果想要深度学习 Service Mesh 技术，光看文章是不够的，需要多亲手实践，因此搭建一套开发环境必不可少；
+想要深入学习 Service Mesh，光看文章是不够的，需要多亲手实践，因此搭建一套开发环境必不可少；
 
-今天本文主要介绍的是在 Windows 环境下，基于 Vmware 虚拟机安装 Ubuntu 20.04 LTS 系统搭建一套 istio 的开发环境。
+本文主要介绍在 Windows 环境下，基于 Vmware 虚拟机安装 Ubuntu 20.04 LTS 系统搭建一套 istio 的开发环境。
 
-之所以选用这个方案主要是有以下几个原因考虑：
+选用这个方案主要是有以下几个原因考虑：
 
 1. 笔记本是 15 年的 MBP，i5 + 8G 跑一套 istio 环境比较拮据；
 2. 台式机资源丰富，2 x 3.31GHz CPU 搭配 48 G 内存，可以分出 16G 内存用来跑 Linux 虚拟机；
@@ -202,10 +202,26 @@ Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.5", GitCom
 
 可以看到默认安装的 Kubernetes  版本是比较新的，1.18.5 版本。
 
+### 配置 Master 节点可被调度
+
+默认情况下 Kubernates 是不允许 Master 节点调度 Pod 的，因为是开发环境又是单节点，需要调整成可被调度：
+
+```bash
+$ kubectl taint node k8s-master node-role.kubernetes.io/master:NoSchedule-
+```
+
 ## 安装 Isitio
 
-（待补充）
+首先执行官网的一键下载脚本：
+
+```bash
+$ curl -L https://istio.io/downloadIstio | sh -
+```
+
+（未完待续）
 
 ## 参考
 
 [How to install Kubernetes on Ubuntu 20.04 Focal Fossa Linux](https://linuxconfig.org/how-to-install-kubernetes-on-ubuntu-20-04-focal-fossa-linux)
+
+[Istio Getting Started](https://istio.io/latest/docs/setup/getting-started/)
