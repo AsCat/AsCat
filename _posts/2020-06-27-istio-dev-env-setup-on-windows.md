@@ -1,9 +1,12 @@
 ---
 layout: post
-title: "windows 10 下基于虚拟机搭建 Kubernates + istio 开发环境"
+title: windows 10 下基于虚拟机搭建 Kubernates + istio 开发环境
+date: 2020-07-01
 categories: istio
-
+issueLink: "https://github.com/AsCat/AsCat/issues/1"
 ---
+
+# Windows 10 下基于虚拟机搭建 K8S + Istio 开发环境
 
 ## 背景
 
@@ -219,6 +222,17 @@ Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.5", GitCom
 $ kubectl taint node k8s-master node-role.kubernetes.io/master:NoSchedule-
 ```
 
+### 配置命令自动补齐
+
+这一步是可选的，可以在环境里配置 kubectl 命令的自动补全功能，在实际的工作中能提高不少效率：
+
+```bash
+echo 'source <(kubectl completion bash)' >>~/.bashrc
+kubectl completion bash >/etc/bash_completion.d/kubectl
+echo 'alias k=kubectl' >>~/.bashrc
+echo 'complete -F __start_kubectl k' >>~/.bashrc
+```
+
 ## 安装 Isitio
 
 首先执行官网的一键下载脚本：
@@ -319,4 +333,7 @@ prometheus-5fdfc44fb7-7wsdg             2/2     Running   0          6m18s
 
 [How to install Kubernetes on Ubuntu 20.04 Focal Fossa Linux](https://linuxconfig.org/how-to-install-kubernetes-on-ubuntu-20-04-focal-fossa-linux)
 
+[Install and Set Up kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
 [Istio Getting Started](https://istio.io/latest/docs/setup/getting-started/)
+

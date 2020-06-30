@@ -5,13 +5,7 @@
 
     <div class="footer-col-wrapper">
       <div class="footer-col">
-        <p class="feed-subscribe">
-          <a href="{{ 'feed.xml' | relative_url }}">
-            <svg class="svg-icon orange">
-              <use xlink:href="{{ 'assets/minima-social-icons.svg#rss' | relative_url }}"></use>
-            </svg><span>Subscribe</span>
-          </a>
-        </p>
+
       {%- if site.author %}
         <ul class="contact-list">
           {% if site.author.name -%}
@@ -20,10 +14,20 @@
           {% if site.author.email -%}
             <li><a class="u-email" href="mailto:{{ site.author.email }}">{{ site.author.email }}</a></li>
           {%- endif %}
+          {% if site.beian -%}
+            <li class="p-name">{{ site.beian | escape }}</li>
+          {%- endif %}
         </ul>
       {%- endif %}
       </div>
       <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="{{ 'feed.xml' | relative_url }}">
+            <svg class="svg-icon orange">
+              <use xlink:href="{{ 'assets/minima-social-icons.svg#rss' | relative_url }}"></use>
+            </svg><span>订阅</span>
+          </a>
+        </p>
         <p>{{ site.description | escape }}</p>
       </div>
     </div>
