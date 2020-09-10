@@ -15,7 +15,7 @@
             <li><a class="u-email" href="mailto:{{ site.author.email }}">{{ site.author.email }}</a></li>
           {%- endif %}
           {% if site.beian -%}
-            <li class="p-name">{{ site.beian | escape }}</li>
+            <li class="p-name"><a class="u-email" href="http://beian.miit.gov.cn">{{ site.beian | escape }}</a></li>
           {%- endif %}
         </ul>
       {%- endif %}
